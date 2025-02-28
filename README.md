@@ -1,4 +1,4 @@
-# 2D Car Optimization Sandbox
+# 2D Car Solution Space Explorer
 
 ## About the project
 
