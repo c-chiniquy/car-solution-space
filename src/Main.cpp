@@ -192,7 +192,7 @@ void Update(double elapsedTime)
 
 }
 
-void Physics()
+void FixedUpdate()
 {
 	// Do physics
 	ig::Timer timer;
@@ -1373,7 +1373,7 @@ void Draw()
 void ApplyIgloSettings()
 {
 	context.SetPresentMode((ig::PresentMode)settings.presentMode);
-	mainloop.SetFixedTimeStepPhysicsCallback(Physics, (double)settings.fixedPhysicsFramerate, settings.maxPhysicsFramesInARow);
+	mainloop.SetFixedUpdateFrameRate((double)settings.fixedPhysicsFramerate, settings.maxPhysicsFramesInARow);
 	mainloop.SetFrameRateLimit((double)settings.frameRateLimit);
 }
 
@@ -1383,8 +1383,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 		ig::WindowSettings(Constants::appName, 1280, 720, true, true),
 		ig::RenderSettings(ig::PresentMode::Immediate, ig::Format::BYTE_BYTE_BYTE_BYTE)))
 	{
-		mainloop.SetMinimizedWindowBehaviour(ig::MainLoop::MinimizedWindowBehaviour::SkipDraw);
-		mainloop.Run(context, Start, OnLoopExited, Draw, Update, OnEvent);
+		mainloop.SetWindowMinimizedBehaviour(ig::MainLoop::WindowMinimizedBehaviour::SkipDraw);
+		mainloop.Run(context, Start, OnLoopExited, Draw, Update, FixedUpdate, OnEvent);
 	}
 
 	return 0;
