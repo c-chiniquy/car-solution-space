@@ -1,7 +1,7 @@
 #pragma once
 
-typedef void(*CallbackOnFitnessTextureMouseDown)(const Genome&);
-typedef void(*CallbackOnFitnessTextureMouseUp)();
+using CallbackOnFitnessTextureMouseDown = std::function<void(const Genome&)>;
+using CallbackOnFitnessTextureMouseUp = std::function<void()>;
 
 class FitnessTexture
 {
@@ -30,7 +30,7 @@ public:
 
 	// Returns true if event is handled
 	bool OnEvent(ig::Event e);
-	void Draw(ig::CommandList& cmd, ig::BatchRenderer & r, ig::Font& font);
+	void Draw(ig::CommandList& cmd, ig::BatchRenderer& r, ig::Font& font);
 
 	uint32_t GetNumDimensions() const { return numDimensions; }
 	uint32_t GetTextureSize() const { return textureSize; }
