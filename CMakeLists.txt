@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.22)
 set(name "car-solution-space")
 project(${name} LANGUAGES CXX)
 
-# requires C++17
-set(CMAKE_CXX_STANDARD 17)
+# requires C++20
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # project
@@ -18,8 +18,8 @@ set(PROJECT_SOURCES
     ${CMAKE_SOURCE_DIR}/src/GeneInterpreter.cpp
     ${CMAKE_SOURCE_DIR}/src/GeneticAlgorithm.h
     ${CMAKE_SOURCE_DIR}/src/GeneticAlgorithm.cpp
-    ${CMAKE_SOURCE_DIR}/src/Main.h
-    ${CMAKE_SOURCE_DIR}/src/Main.cpp
+    ${CMAKE_SOURCE_DIR}/src/App.h
+    ${CMAKE_SOURCE_DIR}/src/App.cpp
     ${CMAKE_SOURCE_DIR}/src/Settings.h
     ${CMAKE_SOURCE_DIR}/src/Settings.cpp
     ${CMAKE_SOURCE_DIR}/src/Terrain.h
@@ -27,21 +27,31 @@ set(PROJECT_SOURCES
 )
 
 # iglo
-set(IGLO_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/extern/iglo-0.2.3")
+set(IGLO_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/extern/iglo-0.3.1")
 set(IGLO_SOURCES
     ${IGLO_INCLUDE_DIR}/iglo.h
     ${IGLO_INCLUDE_DIR}/iglo.cpp
-    ${IGLO_INCLUDE_DIR}/igloBatchRenderer.h
-    ${IGLO_INCLUDE_DIR}/igloBatchRenderer.cpp
-    ${IGLO_INCLUDE_DIR}/igloCamera.h
-    ${IGLO_INCLUDE_DIR}/igloCamera.cpp
-    ${IGLO_INCLUDE_DIR}/igloFont.h
-    ${IGLO_INCLUDE_DIR}/igloFont.cpp
-    ${IGLO_INCLUDE_DIR}/igloMainLoop.h
-    ${IGLO_INCLUDE_DIR}/igloMainLoop.cpp
-    ${IGLO_INCLUDE_DIR}/igloUtility.h
-    ${IGLO_INCLUDE_DIR}/igloUtility.cpp
-    ${IGLO_INCLUDE_DIR}/igloConfig.h
+    ${IGLO_INCLUDE_DIR}/iglo_batch_renderer.h
+    ${IGLO_INCLUDE_DIR}/iglo_batch_renderer.cpp
+    ${IGLO_INCLUDE_DIR}/iglo_screen_renderer.h
+    ${IGLO_INCLUDE_DIR}/iglo_screen_renderer.cpp
+    ${IGLO_INCLUDE_DIR}/iglo_camera.h
+    ${IGLO_INCLUDE_DIR}/iglo_camera.cpp
+    ${IGLO_INCLUDE_DIR}/iglo_font.h
+    ${IGLO_INCLUDE_DIR}/iglo_font.cpp
+    ${IGLO_INCLUDE_DIR}/iglo_main_loop.h
+    ${IGLO_INCLUDE_DIR}/iglo_main_loop.cpp
+    ${IGLO_INCLUDE_DIR}/iglo_utility.h
+    ${IGLO_INCLUDE_DIR}/iglo_utility.cpp
+    ${IGLO_INCLUDE_DIR}/iglo_config.h
+    ${IGLO_INCLUDE_DIR}/backends/iglo_impl_win32.h
+    ${IGLO_INCLUDE_DIR}/backends/iglo_impl_win32.cpp
+    ${IGLO_INCLUDE_DIR}/backends/iglo_impl_x11.h
+    ${IGLO_INCLUDE_DIR}/backends/iglo_impl_x11.cpp
+    ${IGLO_INCLUDE_DIR}/backends/iglo_impl_d3d12.h
+    ${IGLO_INCLUDE_DIR}/backends/iglo_impl_d3d12.cpp
+    ${IGLO_INCLUDE_DIR}/backends/iglo_impl_vulkan.h
+    ${IGLO_INCLUDE_DIR}/backends/iglo_impl_vulkan.cpp
 )
 
 # imgui
@@ -79,57 +89,61 @@ set(BOX2D_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/extern/box2d-2.4.1/include")
 set(BOX2D_DEBUG_LIB "${CMAKE_SOURCE_DIR}/extern/box2d-2.4.1/bin/Debug/box2d.lib")
 set(BOX2D_RELEASE_LIB "${CMAKE_SOURCE_DIR}/extern/box2d-2.4.1/bin/Release/box2d.lib")
 
-# set Agility SDK version
-set(AGILITY_SDK_VERSION "1.715.1-preview")
+if (MSVC)
 
-# set download URL for Agility SDK
-set(AGILITY_SDK_URL "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/${AGILITY_SDK_VERSION}")
+    # set Agility SDK version
+    set(AGILITY_SDK_VERSION "1.715.1-preview")
 
-# set the path where the SDK will be downloaded and extracted
-set(AGILITY_SDK_PACKAGE_DIR "${CMAKE_BINARY_DIR}/packages/Microsoft.Direct3D.D3D12.${AGILITY_SDK_VERSION}")
-set(AGILITY_SDK_NUPKG_FILE "${CMAKE_BINARY_DIR}/Microsoft.Direct3D.D3D12.${AGILITY_SDK_VERSION}.nupkg")
+    # set download URL for Agility SDK
+    set(AGILITY_SDK_URL "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/${AGILITY_SDK_VERSION}")
 
-# download the .nupkg file if it doesn't exist
-if(NOT EXISTS "${AGILITY_SDK_NUPKG_FILE}")
-    message(STATUS "Downloading Agility SDK from NuGet...")
-    file(DOWNLOAD
-        ${AGILITY_SDK_URL}
-        ${AGILITY_SDK_NUPKG_FILE}
-        TLS_VERIFY ON
-        STATUS download_status
-    )
-    list(GET download_status 0 status_code)
-    if(NOT status_code EQUAL 0)
-        message(FATAL_ERROR "Failed to download Agility SDK. Check your internet connection.")
+    # set the path where the SDK will be downloaded and extracted
+    set(AGILITY_SDK_PACKAGE_DIR "${CMAKE_BINARY_DIR}/packages/Microsoft.Direct3D.D3D12.${AGILITY_SDK_VERSION}")
+    set(AGILITY_SDK_NUPKG_FILE "${CMAKE_BINARY_DIR}/Microsoft.Direct3D.D3D12.${AGILITY_SDK_VERSION}.nupkg")
+
+    # download the .nupkg file if it doesn't exist
+    if(NOT EXISTS "${AGILITY_SDK_NUPKG_FILE}")
+        message(STATUS "Downloading Agility SDK from NuGet...")
+        file(DOWNLOAD
+            ${AGILITY_SDK_URL}
+            ${AGILITY_SDK_NUPKG_FILE}
+            TLS_VERIFY ON
+            STATUS download_status
+        )
+        list(GET download_status 0 status_code)
+        if(NOT status_code EQUAL 0)
+            message(FATAL_ERROR "Failed to download Agility SDK. Check your internet connection.")
+        endif()
+        message(STATUS "Successfully downloaded Agility SDK.")
     endif()
-    message(STATUS "Successfully downloaded Agility SDK.")
-endif()
 
-# extract the .nupkg file if it hasn't been extracted yet
-if(NOT EXISTS "${AGILITY_SDK_PACKAGE_DIR}")
-    message(STATUS "Extracting Agility SDK...")
-    file(MAKE_DIRECTORY ${AGILITY_SDK_PACKAGE_DIR})
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${AGILITY_SDK_NUPKG_FILE}
-        WORKING_DIRECTORY ${AGILITY_SDK_PACKAGE_DIR}
-        RESULT_VARIABLE result
-    )
-    if(NOT result EQUAL 0)
-        message(FATAL_ERROR "Failed to extract Agility SDK.")
+    # extract the .nupkg file if it hasn't been extracted yet
+    if(NOT EXISTS "${AGILITY_SDK_PACKAGE_DIR}")
+        message(STATUS "Extracting Agility SDK...")
+        file(MAKE_DIRECTORY ${AGILITY_SDK_PACKAGE_DIR})
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E tar xzf ${AGILITY_SDK_NUPKG_FILE}
+            WORKING_DIRECTORY ${AGILITY_SDK_PACKAGE_DIR}
+            RESULT_VARIABLE result
+        )
+        if(NOT result EQUAL 0)
+            message(FATAL_ERROR "Failed to extract Agility SDK.")
+        endif()
+        message(STATUS "Successfully extracted Agility SDK.")
     endif()
-    message(STATUS "Successfully extracted Agility SDK.")
+
+    # set path to the extracted SDK files
+    set(AGILITY_SDK_INCLUDE_DIR "${AGILITY_SDK_PACKAGE_DIR}/build/native/include")
+    set(AGILITY_SDK_DLL64_DIR "${AGILITY_SDK_PACKAGE_DIR}/build/native/bin/x64")
+
+    # Agility SDK files that will be copied to D3D12 folder
+    set(AGILITY_SDK_DLLS
+        "${AGILITY_SDK_DLL64_DIR}/D3D12Core.dll"
+        "${AGILITY_SDK_DLL64_DIR}/D3D12SDKLayers.dll"
+        "${AGILITY_SDK_DLL64_DIR}/DirectSR.dll"
+    )
+
 endif()
-
-# set path to the extracted SDK files
-set(AGILITY_SDK_INCLUDE_DIR "${AGILITY_SDK_PACKAGE_DIR}/build/native/include")
-set(AGILITY_SDK_DLL64_DIR "${AGILITY_SDK_PACKAGE_DIR}/build/native/bin/x64")
-
-# Agility SDK files that will be copied to D3D12 folder
-set(AGILITY_SDK_DLLS
-    "${AGILITY_SDK_DLL64_DIR}/D3D12Core.dll"
-    "${AGILITY_SDK_DLL64_DIR}/D3D12SDKLayers.dll"
-    "${AGILITY_SDK_DLL64_DIR}/DirectSR.dll"
-)
 
 if(MSVC)
     # set warning level

@@ -1,5 +1,5 @@
 #include "iglo.h"
-#include "igloBatchRenderer.h"
+#include "iglo_batch_renderer.h"
 #include "box2d.h"
 #include "stdexcept"
 #include "Car.h"

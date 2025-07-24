@@ -86,7 +86,6 @@ public:
 	void Draw(ig::BatchRenderer& r, ig::FloatRect cameraRect, bool showDefaultPose, float cameraZoom, bool darkMode);
 
 private:
-
 	bool isLoaded = false;
 	b2World* parentWorld = nullptr;
 

@@ -1,5 +1,5 @@
 #include "iglo.h"
-#include "igloBatchRenderer.h"
+#include "iglo_batch_renderer.h"
 
 #define INI_STRNICMP( s1, s2, cnt ) ( _strnicmp( s1, s2, cnt ) )
 #define INI_IMPLEMENTATION
@@ -322,7 +322,7 @@ bool ParseBool(const char* nameOfVariableToRead, const ini_t* ini, int section)
 	if (index == -1) return false;
 	std::string str = std::string(ini_property_value(ini, section, index));
 	if (std::string(str).empty()) return 0;
-	std::string lowercase = ig::ToLowercase(str);
+	std::string lowercase = ig::utf8_to_lower(str);
 	if (lowercase == "true" ||
 		lowercase == "1" ||
 		lowercase == "yes" ||

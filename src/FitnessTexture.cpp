@@ -1,5 +1,5 @@
 #include "iglo.h"
-#include "igloBatchRenderer.h"
+#include "iglo_batch_renderer.h"
 #include "box2d.h"
 #include "GeneticAlgorithm.h"
 #include "Car.h"
@@ -257,7 +257,7 @@ void FitnessTexture::Draw(ig::CommandList& cmd, ig::BatchRenderer& r, ig::Font& 
 	{
 		if (textures.at(depthSlice))
 		{
-			if (!textures[depthSlice]->IsLoaded()) throw std::runtime_error("This is impossible.");
+			if (!textures[depthSlice]->IsLoaded()) throw std::runtime_error("This should be impossible.");
 		}
 	}
 
@@ -266,8 +266,8 @@ void FitnessTexture::Draw(ig::CommandList& cmd, ig::BatchRenderer& r, ig::Font& 
 		ig::FloatRect box = ig::FloatRect(0, 0, 100, 100) + ig::Vector2((float)textureLocation.x, (float)textureLocation.y);
 		ig::Color32 lineColor = ig::Color32(210, 210, 210);
 		r.DrawRectangle(box, ig::Color32(225, 225, 225));
-		r.DrawRectangularLine(box.left, box.top, box.right, box.bottom, 2, lineColor);
-		r.DrawRectangularLine(box.left, box.bottom, box.right, box.top, 2, lineColor);
+		r.DrawRectangularLine(box.left + 0.5f, box.top + 0.5f, box.right, box.bottom, 2, lineColor);
+		r.DrawRectangularLine(box.left + 0.5f, box.bottom - 0.5f, box.right, box.top, 2, lineColor);
 		std::string str = ig::ToString("Too many\ndimensions to\nvisualize");
 		ig::Vector2 strBounds = r.MeasureString(str, font);
 		ig::Vector2 strLoc = ig::Vector2(box.left + (box.GetWidth() / 2), box.top + (box.GetHeight() / 2)) - (strBounds / 2);
@@ -278,7 +278,13 @@ void FitnessTexture::Draw(ig::CommandList& cmd, ig::BatchRenderer& r, ig::Font& 
 		return;
 	}
 
+	cmd.AddTextureBarrier(*textures[depthSlice], ig::SimpleBarrier::Discard, ig::SimpleBarrier::CopyDest);
+	cmd.FlushBarriers();
+
 	textures[depthSlice]->SetPixels(cmd, &pixels.at((size_t)width * height * depthSlice));
+
+	cmd.AddTextureBarrier(*textures[depthSlice], ig::SimpleBarrier::CopyDest, ig::SimpleBarrier::PixelShaderResource);
+	cmd.FlushBarriers();
 
 	r.SetWorldMatrix(
 		ig::Vector3((float)textureLocation.x, (float)textureLocation.y, 0),
@@ -430,8 +436,11 @@ bool FitnessTexture::SaveToFile(const std::string& destFolderPath, const std::st
 
 	for (uint32_t depthSlice = 0; depthSlice < depth; depthSlice++)
 	{
+		ig::ImageDesc imageDesc;
+		imageDesc.extent = ig::Extent2D(width, height);
+		imageDesc.format = ig::Format::BYTE;
 		ig::Image image;
-		if (!image.LoadAsPointer(&pixels.at((size_t)width * height * depthSlice), width, height, ig::Format::BYTE))
+		if (!image.LoadAsPointer(&pixels.at((size_t)width * height * depthSlice), imageDesc))
 		{
 			return false;
 		}
